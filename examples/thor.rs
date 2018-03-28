@@ -1,21 +1,22 @@
 //! Thor is the god of thunder
-
 #![feature(proc_macro)]
-
 extern crate clap;
 extern crate thunder;
 use thunder::thunderclap;
 
-struct MyApp;
+
+struct Thor;
 
 #[thunderclap]
-impl MyApp {
-    /// Say hello
+/// An application that shoots lightning out of it's hands
+impl Thor {
+
+    /// Say hello to someone at home
     fn hello(name: String) {
-        println!("Hello World!");
+        println!("Hello {}", name);
     }
 }
 
 fn main() {
-    MyApp::start();
+    Thor::start();
 }
