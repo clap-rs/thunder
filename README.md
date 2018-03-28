@@ -12,6 +12,7 @@ struct MyApp;
 
 #[thunderclap]
 impl MyApp {
+    /// Say hello to someone
     fn hello(name: String) {
         println!("Hello {}", name);
     }

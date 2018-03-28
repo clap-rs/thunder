@@ -1,4 +1,4 @@
-//! 
+//!
 
 #![feature(proc_macro, proc_macro_lib)]
 #![allow(unused_imports, unused_variables)]
@@ -38,6 +38,19 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
         match item {
             &ImplItem::Method(ref i) => {
                 let name = LitStr::new(&i.sig.ident.to_string(), i.sig.ident.span);
+                let about = match i.attrs.first() {
+                    Some(a) => String::from(
+                        format!("{}", a.tts)
+                        /* Clean the tokens TODO: Make this not suck */
+                        .replace("/", "")
+                        .replace("\"", "")
+                        .replace("=", "").trim(),
+                    ),
+                    _ => String::new(),
+                };
+
+                println!("{}", about.trim());
+
                 let args = i.sig
                     .decl
                     .inputs
@@ -46,7 +59,7 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                         &FnArg::Captured(ref arg) => match &arg.pat {
                             &Pat::Ident(ref i) => {
                                 let name = format!("{}", i.ident);
-                                quote! { #acc.arg(Arg::with_name(#name)) }
+                                quote! { #acc.arg(Arg::with_name(#name)).about(#about) }
                             }
                             _ => quote!{ #acc },
                         },
