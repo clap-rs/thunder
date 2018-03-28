@@ -1,4 +1,5 @@
-//!
+//! 
+
 #![feature(proc_macro, proc_macro_lib)]
 #![allow(unused_imports, unused_variables)]
 
@@ -17,7 +18,7 @@ use syn::LitStr;
 use syn::fold::{self, Fold};
 use syn::punctuated::Punctuated;
 use syn::synom::Synom;
-use syn::{Expr, Ident, ImplItem, ImplItemMethod, Item, ItemImpl, ItemStatic, Pat, Stmt};
+use syn::{Expr, FnArg, Ident, ImplItem, ImplItemMethod, Item, ItemImpl, ItemStatic, Pat, Stmt};
 
 ///
 #[proc_macro_attribute]
@@ -37,9 +38,20 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
         match item {
             &ImplItem::Method(ref i) => {
                 let name = LitStr::new(&i.sig.ident.to_string(), i.sig.ident.span);
-                let args = i.sig.decl.inputs.iter().fold(quote!{}, |acc, arg| {
-                    quote! { #acc.arg(Arg::with_name("foo")) }
-                });
+                let args = i.sig
+                    .decl
+                    .inputs
+                    .iter()
+                    .fold(quote!{}, |acc, arg| match arg {
+                        &FnArg::Captured(ref arg) => match &arg.pat {
+                            &Pat::Ident(ref i) => {
+                                let name = format!("{}", i.ident);
+                                quote! { #acc.arg(Arg::with_name(#name)) }
+                            }
+                            _ => quote!{ #acc },
+                        },
+                        _ => quote!{ #acc },
+                    });
 
                 app = quote! {
                     #app.subcommand(
@@ -67,10 +79,10 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                 //     };
                 // };
 
-                use clap::{App, SubCommand};
+                use clap::{App, SubCommand, Arg};
 
                 let mut app = #app;
-                let _args = app.print_help();
+                let _args = app.get_matches();
             }
         }
     };
