@@ -3,6 +3,7 @@ name = "thunder"
 description = "Create simple commandline apps with *zero* boilerplate!"
 version = "0.1.0"
 authors = ["Katharina Fey <kookie@spacekookie.de>"]
+license = "MIT/X11 OR Apache-2.0"
 readme = "README.md"
 docs = "docs.rs/thunder"
 
