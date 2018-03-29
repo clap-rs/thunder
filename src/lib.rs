@@ -29,9 +29,12 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
         Err(e) => panic!("Error: '{}'", e),
     };
 
-    let name = match *i.self_ty {
-        Type::Path(ref p) => format!("{}", p.path.segments[0].ident),
-        _ => format!("Unknown App"),
+    let (name, app_token) = match *i.self_ty {
+        Type::Path(ref p) => {
+            let meh = p.path.segments[0].ident;
+            (format!("{}", p.path.segments[0].ident), quote!( #meh ))
+        }
+        _ => (format!("Unknown App"), quote!()),
     };
 
     let about = match i.attrs.first() {
@@ -46,21 +49,17 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
         _ => String::new(),
     };
 
-    let orignal = quote!(#i);
-
     let mut matches: Vec<quote::Tokens> = Vec::new();
-
+    let orignal = quote!(#i);
     let mut app = quote! {
         App::new(#name).about(#about)
     };
-
-    let mut functions: Vec<(String, usize)> = Vec::new();
 
     for item in &i.items {
         match item {
             &ImplItem::Method(ref i) => {
                 let name = LitStr::new(&i.sig.ident.to_string(), i.sig.ident.span);
-                let id = &i.sig.ident;
+                let func_id = &i.sig.ident;
                 let about = match i.attrs.first() {
                     Some(a) => String::from(
                         format!("{}", a.tts)
@@ -73,8 +72,9 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                     _ => String::new(),
                 };
 
-                let mut arg_count = 0;
+                let mut arguments = quote!();
 
+                let mut index: usize = 0;
                 let args = i.sig
                     .decl
                     .inputs
@@ -82,8 +82,13 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                     .fold(quote!{}, |acc, arg| match arg {
                         &FnArg::Captured(ref arg) => match &arg.pat {
                             &Pat::Ident(ref i) => {
-                                arg_count += 1;
                                 let n = format!("{}", i.ident);
+                                arguments = quote! {
+                                    #arguments
+                                    m.value_of(#n).unwrap(),
+                                };
+
+                                index += 1;
                                 quote! { #acc.arg(Arg::with_name(#n)).about(#about) }
                             }
                             _ => quote!{ #acc },
@@ -97,21 +102,14 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                     )
                 };
 
-                // functions.push(func);
-                let m = quote! {
-                    (#name, Some(m)) => #id (),
-                };
-
-                matches.push(m);
+                matches.push(quote! { (#name, Some(m)) => #app_token :: #func_id ( #arguments ), });
             }
             _ => {}
         }
     }
 
     // let mut matchy = quote!{ match args.subcommand() { };
-    let mut matchy = quote!{
-        _ => panic!("Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaah!"),
-    };
+    let mut matchy = quote!{};
 
     for m in &matches {
         matchy = quote! {
@@ -120,52 +118,12 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
         };
     }
 
-    // for func in &functions {
-    //     let mut args = String::new();
-    //     for i in 0..func.1 {
-    //         args.push_str(&format!("m.args[{}]", i));
-    //         if i < func.1 - 1 {
-    //             args.push(',');
-    //         }
-    //     }
-    //     let func_name = &func.0;
-    //     let token = quote!{ #func_name ( #args ) };
-
-    //     let mut wuff = quote::Tokens::new();
-    //     let meh = "w".into_tokens();
-    //     wuff.append_all(meh);
-    //     println!("{:#?}", wuff);
-
-    //     matchy = quote!{ #matchy
-    //         (#func_name, Some(m)) => #token,
-    //     };
-    // }
-
     matchy = quote! {
         match args.subcommand() {
             #matchy
+            _ => { /* We drop errors for now... */ },
         }
     };
-
-    println!("{}", matchy);
-
-    // match matches.subcommand() {
-    //     ("hello", Some(matches)) => println!("{:#?}", matches.args),
-    //     _ => panic!("This is a real problem!"),
-    // }
-
-    println!("========================");
-
-    /* Build ... match links (I think) */
-    // for function in &functions {
-    // let name = format!("{}", function);
-
-    // let fo = quote! { (#name, Some(m)) =>  };
-
-    //         ("migrations", Some(matches)) => run_migration_command(matches),
-    //         ("setup", Some(matches)) => setup::handle_setup(matches),
-    // _ => unreachable!("Can't touch this..."),
-    // }
 
     let tokens = quote! {
         #orignal
@@ -175,19 +133,10 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
 
             /// Starts the CLI parsing and calls whichever function handles the input
             fn start() {
-                // let generated = quote! {
-                //     #[allow(non_upper_case_globals, unused_attributes, unused_qualifications)]
-                //     const #dummy_const: () = {
-                //         extern crate serde as _serde;
-                //         #impl_block
-                //     };
-                // };
-
                 use clap::{App, SubCommand, Arg};
 
-                let mut app = #app;
+                let app = #app;
                 let args = app.get_matches();
-                
                 #matchy
             }
         }
