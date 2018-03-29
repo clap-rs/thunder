@@ -10,15 +10,12 @@ Write simple commandline applications in  Rust with *zero* boilerplate.
 
 struct MyApp;
 
+/// Describe your application with style ✨
 #[thunderclap]
 impl MyApp {
     /// Say hello to someone
     fn hello(name: String) {
         println!("Hello {}", name);
-    }
-
-    fn bye() {
-        println!("Bye!");
     }
 }
 
@@ -27,7 +24,7 @@ fn main() {
 }
 ```
 
-This prints
+**This prints**
 
 ```
 USAGE:
@@ -38,5 +35,6 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    hello    <name>    
-    help     Prints this message or the help of the given subcommand(s)⏎                              
+    hello    Say hello to someone
+    help     Prints this message or the help of the given subcommand(s)
+```

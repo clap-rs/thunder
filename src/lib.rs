@@ -52,7 +52,7 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
         App::new(#name).about(#about)
     };
 
-    let mut functions: Vec<String> = Vec::new();
+    let mut functions: Vec<(String, usize)> = Vec::new();
 
     for item in &i.items {
         match item {
@@ -70,6 +70,8 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                     _ => String::new(),
                 };
 
+                let mut func = (format!("{}", name.value()), 0);
+
                 let args = i.sig
                     .decl
                     .inputs
@@ -77,9 +79,9 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                     .fold(quote!{}, |acc, arg| match arg {
                         &FnArg::Captured(ref arg) => match &arg.pat {
                             &Pat::Ident(ref i) => {
-                                let name = format!("{}", i.ident);
-                                functions.push(name.clone());
-                                quote! { #acc.arg(Arg::with_name(#name)).about(#about) }
+                                func.1 += 1;
+                                let n = format!("{}", i.ident);
+                                quote! { #acc.arg(Arg::with_name(#n)).about(#about) }
                             }
                             _ => quote!{ #acc },
                         },
@@ -91,17 +93,38 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                         SubCommand::with_name(#name)#args
                     )
                 };
+
+                functions.push(func);
             }
             _ => {},
         }
     }
 
-    // let mut matchy = quote!{ match args.subcommands() { };
+    let mut matchy = quote!{ match args.subcommand() "{" };
+
+    for func in &functions {
+        
+    }
+
+    // match matches.subcommand() {
+    //     ("hello", Some(matches)) => println!("{:#?}", matches.args),
+    //     _ => panic!("This is a real problem!"),
+    // }
+
+    println!("{:#?}", functions);
 
     /* Build ... match links (I think) */
-    for function in &functions {
+    // for function in &functions {
+        // let name = format!("{}", function);
 
-    }
+
+
+        // let fo = quote! { (#name, Some(m)) =>  };
+
+//         ("migrations", Some(matches)) => run_migration_command(matches),
+//         ("setup", Some(matches)) => setup::handle_setup(matches),
+// _ => unreachable!("Can't touch this..."),
+    // }
 
     let tokens = quote! {
             #orignal

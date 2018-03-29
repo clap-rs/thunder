@@ -7,8 +7,8 @@ use thunder::thunderclap;
 
 struct Thor;
 
-#[thunderclap]
 /// An application that shoots lightning out of it's hands
+#[thunderclap]
 impl Thor {
 
     /// Say hello to someone at home
