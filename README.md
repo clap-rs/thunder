@@ -1,7 +1,8 @@
 # ⚡ Thunder ⚡
 
-Write simple commandline applications in  Rust with *zero* boilerplate.
+Write simple commandline applications in  Rust with *zero* boilerplate. This crate was inspired by [thor](https://github.com/erikhuda/thor) and uses [clap](https://github.com/kbknapp/clap-rs).
 
+Experimental stage; **use at your own risk!**
 
 ## Example
 

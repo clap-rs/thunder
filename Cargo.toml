@@ -1,7 +1,10 @@
 [package]
 name = "thunder"
+description = "Create simple commandline apps with *zero* boilerplate!"
 version = "0.1.0"
 authors = ["Katharina Fey <kookie@spacekookie.de>"]
+readme = "README.md"
+docs = "docs.rs/thunder"
 
 [lib]
 proc-macro = true
