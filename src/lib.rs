@@ -48,6 +48,8 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
 
     let orignal = quote!(#i);
 
+    let mut matches: Vec<quote::Tokens> = Vec::new();
+
     let mut app = quote! {
         App::new(#name).about(#about)
     };
@@ -58,6 +60,7 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
         match item {
             &ImplItem::Method(ref i) => {
                 let name = LitStr::new(&i.sig.ident.to_string(), i.sig.ident.span);
+                let id = &i.sig.ident;
                 let about = match i.attrs.first() {
                     Some(a) => String::from(
                         format!("{}", a.tts)
@@ -70,7 +73,7 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                     _ => String::new(),
                 };
 
-                let mut func = (format!("{}", name.value()), 0);
+                let mut arg_count = 0;
 
                 let args = i.sig
                     .decl
@@ -79,7 +82,7 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                     .fold(quote!{}, |acc, arg| match arg {
                         &FnArg::Captured(ref arg) => match &arg.pat {
                             &Pat::Ident(ref i) => {
-                                func.1 += 1;
+                                arg_count += 1;
                                 let n = format!("{}", i.ident);
                                 quote! { #acc.arg(Arg::with_name(#n)).about(#about) }
                             }
@@ -94,7 +97,12 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                     )
                 };
 
-                functions.push(func);
+                // functions.push(func);
+                let m = quote! {
+                    (#name, Some(m)) => #id (),
+                };
+
+                matches.push(m);
             }
             _ => {}
         }
@@ -105,24 +113,33 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
         _ => panic!("Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaah!"),
     };
 
-    for func in &functions {
-        let mut args = String::new();
-        for i in 0..func.1 {
-            args.push_str(&format!("m.args[{}]", i));
-            if i < func.1 - 1 {
-                args.push(',');
-            }
-        }
-        let func_name = &func.0;
-        let token = quote!{ #func_name ( #args ) };
-
-        let wuff = "wuff()";
-        println!("{}", wuff.into_tokens());
-
-        matchy = quote!{ #matchy
-            (#func_name, Some(m)) => #token,
+    for m in &matches {
+        matchy = quote! {
+            #matchy
+            #m
         };
     }
+
+    // for func in &functions {
+    //     let mut args = String::new();
+    //     for i in 0..func.1 {
+    //         args.push_str(&format!("m.args[{}]", i));
+    //         if i < func.1 - 1 {
+    //             args.push(',');
+    //         }
+    //     }
+    //     let func_name = &func.0;
+    //     let token = quote!{ #func_name ( #args ) };
+
+    //     let mut wuff = quote::Tokens::new();
+    //     let meh = "w".into_tokens();
+    //     wuff.append_all(meh);
+    //     println!("{:#?}", wuff);
+
+    //     matchy = quote!{ #matchy
+    //         (#func_name, Some(m)) => #token,
+    //     };
+    // }
 
     matchy = quote! {
         match args.subcommand() {
