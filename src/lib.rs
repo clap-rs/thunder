@@ -21,7 +21,10 @@ use syn::synom::Synom;
 use syn::{Expr, FnArg, Ident, ImplItem, ImplItemMethod, Item, ItemImpl, ItemStatic, Pat, Stmt,
           Type};
 
-///
+/// Main macro that implements automated clap generation.
+/// 
+/// Tag an `impl` block with this attribute of a type. Then
+/// call `start()` on the type to handle match parsing.
 #[proc_macro_attribute]
 pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
     let i: ItemImpl = match syn::parse(input.clone()) {
