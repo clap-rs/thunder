@@ -1,7 +1,6 @@
 # ⚡ Thunder ⚡
 
 [![Travis](https://img.shields.io/travis/spacekookie/thunder.svg?style=flat-square)](https://travis-ci.org/spacekookie/thunder/)
-
 [![Crates.io](https://img.shields.io/crates/v/thunder.svg?style=flat-square)](https://crates.io/crates/thunder)
 
 Write simple commandline applications in  Rust with *zero* boilerplate. This crate was inspired by [thor](https://github.com/erikhuda/thor) and uses [clap](https://github.com/kbknapp/clap-rs).
