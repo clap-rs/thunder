@@ -5,7 +5,7 @@
 [![](https://img.shields.io/crates/v/thunder.svg)](https://crates.io/crates/thunder)
 [![Docs.rs](https://docs.rs/thunder/badge.svg)](https://docs.rs/thunder/)
 
-Write simple commandline applications in  Rust with *zero* boilerplate. This crate was inspired by [thor](https://github.com/erikhuda/thor) and uses [clap](https://github.com/kbknapp/clap-rs).
+Write simple commandline applications in  Rust with *zero* boilerplate. This crate uses [clap.rs](https://github.com/kbknapp/clap-rs) for the actual argument parsing.
 
 Experimental stage; **use at your own risk!**
 
