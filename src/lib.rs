@@ -92,7 +92,7 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                                 };
 
                                 index += 1;
-                                quote! { #acc.arg(Arg::with_name(#n)).about(#about) }
+                                quote! { #acc.arg(Arg::with_name(#n)) }
                             }
                             _ => quote!{ #acc },
                         },
@@ -101,7 +101,7 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
 
                 app = quote! {
                     #app.subcommand(
-                        SubCommand::with_name(#name)#args
+                        SubCommand::with_name(#name).about(#about)#args
                     )
                 };
 
