@@ -13,6 +13,11 @@ impl Thor {
     fn hello(name: &str) {
         println!("Hello {}", name);
     }
+
+    /// Print bar
+    fn foo() {
+        println!("bar");
+    }
 }
 
 fn main() {
