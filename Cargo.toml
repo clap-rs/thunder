@@ -5,7 +5,7 @@ version = "0.1.2"
 authors = ["Katharina Fey <kookie@spacekookie.de>"]
 license = "MIT/X11 OR Apache-2.0"
 readme = "README.md"
-docs = "docs.rs/thunder"
+documentation = "https://docs.rs/thunder"
 
 [lib]
 proc-macro = true
