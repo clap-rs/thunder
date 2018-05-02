@@ -6,6 +6,7 @@ authors = ["Katharina Fey <kookie@spacekookie.de>"]
 license = "MIT/X11 OR Apache-2.0"
 readme = "README.md"
 documentation = "https://docs.rs/thunder"
+repository = "https://github.com/spacekookie/thunder"
 keywords = ["argument", "cli", "arg", "parser", "parse"]
 categories = ["command-line-interface"]
 
