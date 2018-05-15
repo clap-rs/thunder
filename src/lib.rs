@@ -93,7 +93,7 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                                 };
 
                                 index += 1;
-                                quote! { #acc.arg(Arg::with_name(#n)) }
+                                quote! { #acc.arg(Arg::with_name(#n).required(true)) }
                             }
                             _ => quote!{ #acc },
                         },
