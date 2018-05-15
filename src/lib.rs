@@ -14,12 +14,13 @@ extern crate quote;
 use proc_macro::TokenStream;
 use quote::ToTokens;
 use std::collections::HashSet as Set;
-use syn::LitStr;
 use syn::fold::{self, Fold};
 use syn::punctuated::Punctuated;
 use syn::synom::Synom;
-use syn::{Expr, FnArg, Ident, ImplItem, ImplItemMethod, Item, ItemImpl, ItemStatic, Pat, Stmt,
-          Type};
+use syn::LitStr;
+use syn::{
+    Expr, FnArg, Ident, ImplItem, ImplItemMethod, Item, ItemImpl, ItemStatic, Pat, Stmt, Type,
+};
 
 /// Main macro that implements automated clap generation.
 ///
@@ -55,7 +56,7 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
     let mut matches: Vec<quote::Tokens> = Vec::new();
     let orignal = quote!(#i);
     let mut app = quote! {
-        App::new(#name).about(#about)
+        App::new(#name).about(#about).setting(AppSettings::SubcommandRequired)
     };
 
     for item in &i.items {
@@ -137,7 +138,7 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
 
             /// Starts the CLI parsing and calls whichever function handles the input
             fn start() {
-                use clap::{App, SubCommand, Arg};
+                use clap::{App, SubCommand, Arg, AppSettings};
 
                 let app = #app;
                 let args = app.get_matches();
