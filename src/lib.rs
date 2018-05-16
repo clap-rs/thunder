@@ -1,4 +1,4 @@
-//! `thunder.rs`, the zero-boilerplate commandline argument parser
+//! `thunder.rs` a zero-boilerplate commandline argument parser ✨
 #![feature(external_doc)]
 #![doc(include = "../README.md")]
 #![feature(proc_macro, proc_macro_lib)]
@@ -48,7 +48,7 @@ macro_rules! check_input {
 ///
 /// ## Example
 ///
-/// ```norun
+/// ```rust norun
 /// fn say_hello(name: &str, age: Option<u16>) {
 ///     // ...
 /// }
@@ -64,7 +64,7 @@ macro_rules! check_input {
 ///
 /// The block below defines a medium sized `thunder` application.
 ///
-/// ```norun
+/// ```rust norun
 /// struct MyApp;
 ///
 /// #[thunderclap]
@@ -80,6 +80,7 @@ macro_rules! check_input {
 ///     // This starts the match execution
 ///     MyApp::start();
 /// }
+/// ```
 ///
 /// ## Global variables
 ///
@@ -93,7 +94,7 @@ macro_rules! check_input {
 ///
 /// A small example below.
 ///
-/// ```norun
+/// ```rust norun
 /// struct MyApp;
 ///
 /// #[thunder(arg1: u32: "A small description", arg2: Option<bool>: "Optional global")]
