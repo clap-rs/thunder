@@ -5,9 +5,7 @@
 [![](https://img.shields.io/crates/v/thunder.svg)](https://crates.io/crates/thunder)
 [![Docs.rs](https://docs.rs/thunder/badge.svg)](https://docs.rs/thunder/)
 
-Write simple commandline applications in  Rust with *zero* boilerplate. This crate uses [clap.rs](https://github.com/kbknapp/clap-rs) for the actual argument parsing.
-
-Experimental stage; **use at your own risk!**
+Write simple commandline applications in Rust with *zero* boilerplate. Bind Rust functions to CLI functions and options with macros. This crate uses [clap.rs](https://github.com/kbknapp/clap-rs) for the actual argument parsing.
 
 ## Example
 
@@ -20,7 +18,7 @@ struct MyApp;
 #[thunderclap]
 impl MyApp {
     /// Say hello to someone
-    fn hello(name: String) {
+    fn hello(name: &str) {
         println!("Hello {}", name);
     }
 }
@@ -44,3 +42,5 @@ SUBCOMMANDS:
     hello    Say hello to someone
     help     Prints this message or the help of the given subcommand(s)
 ```
+
+Check the documentation for more examples.
