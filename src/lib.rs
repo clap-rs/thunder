@@ -21,7 +21,7 @@ use syn::synom::Synom;
 use syn::LitStr;
 use syn::{
     DeriveInput, Expr, FnArg, GenericArgument, Ident, ImplItem, ImplItemMethod, Item, ItemImpl,
-    ItemStatic, Pat, PathArguments, Stmt, Type,
+    ItemStatic, Pat, PathArguments, PathSegment, Stmt, Type,
 };
 
 macro_rules! check_input {
@@ -56,14 +56,20 @@ pub fn thunderclap(args: TokenStream, input: TokenStream) -> TokenStream {
             .map(|triple| (triple[0], triple[1], triple[2]))
             .map(|(x, y, z)| {
                 (
-                    x,
+                    check_input! { x, TokenStream::from_str(&x.replace("\"", "")) },
                     check_input! { y, TokenStream::from_str(y) },
                     z.replace("\"", ""),
                 )
             })
-            .map(|(x, y, z)| (x, check_input! { y, syn::parse(y.clone()) }, z))
-            .map(|(x, y, z)| (String::from(x), y, String::from(z)))
-            .collect::<Vec<(String, Type, String)>>()
+            .map(|(x, y, z)| {
+                (
+                    check_input! { x, syn::parse(x.clone()) },
+                    check_input! { y, syn::parse(y.clone()) },
+                    z,
+                )
+            })
+            .map(|(x, y, z)| (x, y, String::from(z)))
+            .collect::<Vec<(Type, Type, String)>>()
     } else {
         Vec::new()
     };
@@ -100,7 +106,20 @@ pub fn thunderclap(args: TokenStream, input: TokenStream) -> TokenStream {
         App::new(#name).about(#about).setting(AppSettings::SubcommandRequired)
     };
 
+    let mut accessors = quote!{};
+    let mut data_struct_fields = quote!{};
+    let mut init_struct_fields = quote!{};
+    let mut global_match_state_matcher = quote!{};
+
     global_args.iter().for_each(|(name, typed, about)| {
+        let (name, name_token) = match name {
+            Type::Path(ref p) => {
+                let meh = p.path.segments[0].ident;
+                (format!("{}", p.path.segments[0].ident), quote!( #meh ))
+            }
+            _ => (format!("Unknown App"), quote!()),
+        };
+
         let name = format!("{}", name);
         let optional = match typed {
             Type::Path(ref p) => match p.path.segments.first() {
@@ -113,15 +132,77 @@ pub fn thunderclap(args: TokenStream, input: TokenStream) -> TokenStream {
             _ => false,
         };
 
+        let inner = if optional {
+            match typed {
+                Type::Path(ref p) => match p.path.segments.first() {
+                    Some(ps) => match ps.value().arguments {
+                        PathArguments::AngleBracketed(ref b) => match b.args.first() {
+                            Some(pair) => match pair.value() {
+                                GenericArgument::Type(Type::Path(pp)) => {
+                                    Some(Type::from(pp.clone()))
+                                }
+                                _ => None,
+                            },
+                            _ => None,
+                        },
+                        _ => None,
+                    },
+                    _ => None,
+                },
+                _ => None,
+            }
+        } else {
+            None
+        };
+
+        accessors = quote! {
+            #accessors
+
+            #[allow(unused)]
+            fn #name_token ( /* No Parameters */ ) -> #typed {
+                unsafe {
+                    __THUNDER_DATA_STATIC.as_ref().unwrap().#name_token.as_ref().unwrap().clone()
+                }
+            }
+        };
+
+        data_struct_fields = quote! {
+            #data_struct_fields
+            #name_token : Option< #typed > ,
+        };
+
+        init_struct_fields = quote! {
+            #init_struct_fields
+            #name_token : None ,
+        };
+
+        global_match_state_matcher = if optional {
+            let inner = inner.unwrap();
+            quote! {
+                #global_match_state_matcher
+                global_match_states.#name_token = match args.value_of(#name) {
+                    Some(v) => Some(Some(v.parse::<#inner>().expect("Failed to parse value. Double check!"))),
+                    None => None,
+                };
+            }
+        } else {
+            quote! {
+                #global_match_state_matcher
+                global_match_states.#name_token = Some(args.value_of(#name).unwrap().parse::<#typed>().expect("Failed to parse value. Double check!"));
+            }
+        };
+
         app = if optional {
+            let long = format!("--{}", name);
+            let short = format!("-{}", &name[..1]);
             quote! {
                 #app
-                .arg(Arg::with_name(#name).help(#about))
+                .arg(Arg::with_name(#name).long(#long).short(#short).takes_value(true).help(#about))
             }
         } else {
             quote! {
                 #app
-                .arg(Arg::with_name(#name).required(true).help(#about))
+                .arg(Arg::with_name(#name).takes_value(true).required(true).help(#about))
             }
         };
     });
@@ -255,6 +336,17 @@ pub fn thunderclap(args: TokenStream, input: TokenStream) -> TokenStream {
         }
     };
 
+    matchy = quote! {
+        let mut global_match_states = __ThunderDataStaticStore::new_empty_store();
+        #global_match_state_matcher
+
+        unsafe {
+            __THUNDER_DATA_STATIC = Some(global_match_states);
+        }
+
+        #matchy
+    };
+
     let tokens = quote! {
         #orignal
 
@@ -269,6 +361,27 @@ pub fn thunderclap(args: TokenStream, input: TokenStream) -> TokenStream {
                 let app = #app;
                 let args = app.get_matches();
                 #matchy
+            }
+
+            #accessors
+        }
+
+        static mut __THUNDER_DATA_STATIC: Option<__ThunderDataStaticStore> = None;
+
+        /// This block was generated by thunder v0.0.0
+        #[allow(unused)]
+        #[doc(hidden)]
+        struct __ThunderDataStaticStore {
+            #data_struct_fields
+        }
+
+        #[allow(unused)]
+        #[doc(hidden)]
+        impl __ThunderDataStaticStore {
+            pub fn new_empty_store() -> __ThunderDataStaticStore {
+                __ThunderDataStaticStore {
+                    #init_struct_fields
+                }
             }
         }
     };

@@ -4,17 +4,29 @@ extern crate clap;
 extern crate thunder;
 use thunder::thunderclap;
 
-const DEF: &'static str = "Hello to the world";
-
 struct Thor;
 
 /// An application that shoots lightning out of its hands
 #[thunderclap(drunk: bool: "Thor drinks a lot", hammers: Option<u8>: "This isn't a joke about being drunk")]
 impl Thor {
-
     /// Say hello to someone at home
     fn hello(name: &str) {
-        println!("Hello {}", name);
+        println!(
+            "Hello {}, your son Thor is {}",
+            name,
+            match Self::drunk() {
+                true => "drunk",
+                false => "not drunk!",
+            }
+        );
+
+        println!(
+            "Thor has {} hammers",
+            match Self::hammers() {
+                Some(n) => n,
+                _ => 0,
+            }
+        );
     }
 
     /// Say goodbye. Or don't, if you're shy
