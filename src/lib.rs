@@ -86,14 +86,34 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                     .fold(quote!{}, |acc, arg| match arg {
                         &FnArg::Captured(ref arg) => match &arg.pat {
                             &Pat::Ident(ref i) => {
-                                let n = format!("{}", i.ident);
-                                arguments = quote! {
-                                    #arguments
-                                    m.value_of(#n).unwrap(),
+                                // println!("{:#?}", arg);
+                                // println!("============================\n\n");
+                                let name = format!("{}", i.ident);
+                                let optional = match arg.ty {
+                                    Type::Path(ref p) => match p.path.segments.first() {
+                                        Some(ps) => match &ps.value().ident.to_string().as_str() {
+                                            &"Option" => true,
+                                            _ => false,
+                                        },
+                                        _ => false,
+                                    },
+                                    _ => false,
                                 };
 
                                 index += 1;
-                                quote! { #acc.arg(Arg::with_name(#n).required(true)) }
+                                if optional {
+                                    arguments = quote! {
+                                        #arguments
+                                        m.value_of(#name),
+                                    };
+                                    quote! { #acc.arg(Arg::with_name(#name)) }
+                                } else {
+                                    arguments = quote! {
+                                        #arguments
+                                        m.value_of(#name).unwrap(),
+                                    };
+                                    quote! { #acc.arg(Arg::with_name(#name).required(true)) }
+                                }
                             }
                             _ => quote!{ #acc },
                         },

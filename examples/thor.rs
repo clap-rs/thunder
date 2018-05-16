@@ -14,6 +14,10 @@ impl Thor {
         println!("Hello {}", name);
     }
 
+    fn bye(name: Option<&str>) {
+        println!("Not saying bye is rude: {:?}", name);
+    }
+
     /// Print bar
     fn foo() {
         println!("bar");
