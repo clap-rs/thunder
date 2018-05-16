@@ -18,6 +18,10 @@ impl Thor {
         println!("Not saying bye is rude: {:?}", name);
     }
 
+    fn aged(age: Option<i128>) {
+        println!("You're not very old: {:?}", age);
+    }
+
     /// Print bar
     fn foo() {
         println!("bar");

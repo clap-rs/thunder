@@ -19,7 +19,8 @@ use syn::punctuated::Punctuated;
 use syn::synom::Synom;
 use syn::LitStr;
 use syn::{
-    Expr, FnArg, Ident, ImplItem, ImplItemMethod, Item, ItemImpl, ItemStatic, Pat, Stmt, Type,
+    Expr, FnArg, GenericArgument, Ident, ImplItem, ImplItemMethod, Item, ItemImpl, ItemStatic, Pat,
+    PathArguments, Stmt, Type,
 };
 
 /// Main macro that implements automated clap generation.
@@ -86,8 +87,6 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                     .fold(quote!{}, |acc, arg| match arg {
                         &FnArg::Captured(ref arg) => match &arg.pat {
                             &Pat::Ident(ref i) => {
-                                // println!("{:#?}", arg);
-                                // println!("============================\n\n");
                                 let name = format!("{}", i.ident);
                                 let optional = match arg.ty {
                                     Type::Path(ref p) => match p.path.segments.first() {
@@ -100,17 +99,58 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
                                     _ => false,
                                 };
 
+                                let mmm = if let Some(typed) = match arg.ty {
+                                    Type::Path(ref p) => match p.path.segments.first() {
+                                        Some(ps) => match optional {
+                                            false => Some(arg.ty.clone()),
+                                            true => match ps.value().arguments {
+                                                PathArguments::AngleBracketed(ref b) => {
+                                                    match b.args.first() {
+                                                        Some(pair) => match pair.value() {
+                                                            GenericArgument::Type(Type::Path(
+                                                                pp,
+                                                            )) => Some(Type::from(pp.clone())),
+                                                            _ => None,
+                                                        },
+                                                        _ => None,
+                                                    }
+                                                }
+                                                _ => None,
+                                            },
+                                        },
+                                        _ => None,
+                                    },
+                                    _ => None,
+                                } {
+                                    if optional {
+                                        quote! {
+                                            match m.value_of(#name) {
+                                                Some(m) => Some(m.parse::<#typed>().unwrap()),
+                                                None => None
+                                            }
+                                        }
+                                    } else {
+                                        quote! { m.value_of(#name).unwrap().parse::<#typed>().unwrap() }
+                                    }
+                                } else {
+                                    if optional {
+                                        quote! { m.value_of(#name) }
+                                    } else {
+                                        quote! { m.value_of(#name).unwrap() }
+                                    }
+                                };
+
                                 index += 1;
                                 if optional {
                                     arguments = quote! {
                                         #arguments
-                                        m.value_of(#name),
+                                        #mmm
                                     };
                                     quote! { #acc.arg(Arg::with_name(#name)) }
                                 } else {
                                     arguments = quote! {
                                         #arguments
-                                        m.value_of(#name).unwrap(),
+                                        #mmm,
                                     };
                                     quote! { #acc.arg(Arg::with_name(#name).required(true)) }
                                 }
