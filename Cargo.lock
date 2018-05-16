@@ -104,7 +104,7 @@ dependencies = [
 
 [[package]]
 name = "thunder"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "clap 2.31.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
