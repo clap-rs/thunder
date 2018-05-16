@@ -1,5 +1,6 @@
-//!
-
+//! `thunder.rs`, the zero-boilerplate commandline argument parser
+#![feature(external_doc)]
+#![doc(include = "../README.md")]
 #![feature(proc_macro, proc_macro_lib)]
 #![allow(unused_imports, unused_variables)]
 
@@ -36,10 +37,77 @@ macro_rules! check_input {
     };
 }
 
-/// Main macro that implements automated clap generation.
+/// Main macro that implements automated clap generation. This invokes ✨ *magic* ✨
 ///
-/// Tag an `impl` block with this attribute of a type. Then
-/// call `start()` on the type to handle match parsing.
+/// Foremost every `impl` block tagged with the macro will turn into a Thunder-app. At
+/// the moment only a single Thunder app can exist in the same scope (this will change).
+///
+/// What a `thunder` app does is take every function in it's scope and turn it into a
+/// CLI handle with `clap`, meaning that all arguments will be mapped to the user shell
+/// as they are described in the function body.
+///
+/// ## Example
+///
+/// ```norun
+/// fn say_hello(name: &str, age: Option<u16>) {
+///     // ...
+/// }
+/// ```
+///
+/// This function will turn into the CLI option `say_hello` that always takes a name
+/// parameter (which is a String) and optionally a number (which has to fit into u16!)
+///
+/// These conversion checks are done at run-time but functions are only called if
+/// the parameters are valid. As such, you don't have to worry :)
+///
+/// ### A more complete example
+///
+/// The block below defines a medium sized `thunder` application.
+///
+/// ```norun
+/// struct MyApp;
+///
+/// #[thunderclap]
+/// impl MyApp {
+///     /// Say hello to someone on the other side
+///     fn say_hello(name: &str, age: Option<u16>) { /* ... */ }
+///     
+///     /// It was nice to meet you!
+///     fn goodybe(name: Option<&str>) { /* ... */ }
+/// }
+///
+/// fn main() {
+///     // This starts the match execution
+///     MyApp::start();
+/// }
+///
+/// ## Global variables
+///
+/// It's possible to declare argument parameters that can be invoked on any function and
+/// are available outside of regular context. `thunder` generates an argument store which
+/// you can use to get results from these global arguments.
+///
+/// They can be both mandatory (`T`) or optional (`Option<T>`) and are named and also have
+/// a description displayed to the user. Their names are abbreviated with `--name` and `-n`
+/// if the parameter was called `name`.
+///
+/// A small example below.
+///
+/// ```norun
+/// struct MyApp;
+///
+/// #[thunder(arg1: u32: "A small description", arg2: Option<bool>: "Optional global")]
+/// impl MyApp {
+///     fn hello(name: &str) {}
+/// }
+///
+/// fn main() {
+///     MyApp::start();
+/// }
+/// ```
+///
+/// If you have more questions or encounter bugs, don't hesitate to contact us!
+/// PR's always welcome (we're friendly ❤️)
 #[proc_macro_attribute]
 pub fn thunderclap(args: TokenStream, input: TokenStream) -> TokenStream {
     let i: ItemImpl = match syn::parse(input.clone()) {
