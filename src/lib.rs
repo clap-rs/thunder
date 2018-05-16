@@ -14,24 +14,58 @@ extern crate quote;
 use proc_macro::TokenStream;
 use quote::ToTokens;
 use std::collections::HashSet as Set;
+use std::str::FromStr;
 use syn::fold::{self, Fold};
 use syn::punctuated::Punctuated;
 use syn::synom::Synom;
 use syn::LitStr;
 use syn::{
-    Expr, FnArg, GenericArgument, Ident, ImplItem, ImplItemMethod, Item, ItemImpl, ItemStatic, Pat,
-    PathArguments, Stmt, Type,
+    DeriveInput, Expr, FnArg, GenericArgument, Ident, ImplItem, ImplItemMethod, Item, ItemImpl,
+    ItemStatic, Pat, PathArguments, Stmt, Type,
 };
+
+macro_rules! check_input {
+    ($y:expr, $x:expr) => {
+        match $x {
+            Ok(s) => s,
+            Err(e) => panic!(
+                "Failed to parse type in global arg annotation '{}'. Specific error: {:?}",
+                $y, e
+            ),
+        }
+    };
+}
 
 /// Main macro that implements automated clap generation.
 ///
 /// Tag an `impl` block with this attribute of a type. Then
 /// call `start()` on the type to handle match parsing.
 #[proc_macro_attribute]
-pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn thunderclap(args: TokenStream, input: TokenStream) -> TokenStream {
     let i: ItemImpl = match syn::parse(input.clone()) {
         Ok(input) => input,
         Err(e) => panic!("Error: '{}'", e),
+    };
+
+    /* Manually parse any argument pars given to us */
+    let args: String = args.to_string();
+    let global_args = if args.len() != 0 {
+        args.split(',')
+            .map(|i| i.trim())
+            .map(|i| i.split(':').map(|x| x.trim()).collect::<Vec<&str>>())
+            .map(|triple| (triple[0], triple[1], triple[2]))
+            .map(|(x, y, z)| {
+                (
+                    x,
+                    check_input! { y, TokenStream::from_str(y) },
+                    z.replace("\"", ""),
+                )
+            })
+            .map(|(x, y, z)| (x, check_input! { y, syn::parse(y.clone()) }, z))
+            .map(|(x, y, z)| (String::from(x), y, String::from(z)))
+            .collect::<Vec<(String, Type, String)>>()
+    } else {
+        Vec::new()
     };
 
     let (name, app_token) = match *i.self_ty {
@@ -42,23 +76,55 @@ pub fn thunderclap(_args: TokenStream, input: TokenStream) -> TokenStream {
         _ => (format!("Unknown App"), quote!()),
     };
 
-    let about = match i.attrs.first() {
-        Some(a) => String::from(
-            format!("{}", a.tts)
-                        /* Clean the tokens TODO: Make this not suck */
-                        .replace("/", "")
-                        .replace("\\", "")
-                        .replace("\"", "")
-                        .replace("=", "").trim(),
-        ),
-        _ => String::new(),
-    };
+    let about = i.attrs
+        .iter()
+        .map(|x| (x, x.path.segments.first()))
+        .filter(|(a, x)| x.is_some())
+        .map(|(a, x)| (a, x.unwrap().value().clone()))
+        .map(|(a, v)| match &v.ident.to_string().as_str() {
+            &"doc" => String::from(
+                format!("{}", a.tts)
+                    .replace("/", "")
+                    .replace("\\", "")
+                    .replace("\"", "")
+                    .replace("=", "")
+                    .trim(),
+            ),
+            _ => String::from(""),
+        })
+        .collect::<String>();
 
     let mut matches: Vec<quote::Tokens> = Vec::new();
     let orignal = quote!(#i);
     let mut app = quote! {
         App::new(#name).about(#about).setting(AppSettings::SubcommandRequired)
     };
+
+    global_args.iter().for_each(|(name, typed, about)| {
+        let name = format!("{}", name);
+        let optional = match typed {
+            Type::Path(ref p) => match p.path.segments.first() {
+                Some(ps) => match &ps.value().ident.to_string().as_str() {
+                    &"Option" => true,
+                    _ => false,
+                },
+                _ => false,
+            },
+            _ => false,
+        };
+
+        app = if optional {
+            quote! {
+                #app
+                .arg(Arg::with_name(#name).help(#about))
+            }
+        } else {
+            quote! {
+                #app
+                .arg(Arg::with_name(#name).required(true).help(#about))
+            }
+        };
+    });
 
     for item in &i.items {
         match item {
