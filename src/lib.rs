@@ -39,10 +39,10 @@ macro_rules! check_input {
 
 /// Main macro that implements automated clap generation. This invokes ✨ *magic* ✨
 ///
-/// Foremost every `impl` block tagged with the macro will turn into a Thunder-app. At
+/// Every `impl` block tagged with the macro will turn into a Thunder-app. At
 /// the moment only a single Thunder app can exist in the same scope (this will change).
 ///
-/// What a `thunder` app does is take every function in it's scope and turn it into a
+/// What a `thunder` app does is take every function in its scope and turn it into a
 /// CLI handle with `clap`, meaning that all arguments will be mapped to the user shell
 /// as they are described in the function body.
 ///
