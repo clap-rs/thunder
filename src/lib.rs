@@ -1,7 +1,7 @@
 //! `thunder.rs` a zero-boilerplate commandline argument parser ✨
 #![feature(external_doc)]
 #![doc(include = "../README.md")]
-#![feature(proc_macro, proc_macro_lib)]
+#![feature(proc_macro, proc_macro_lib, iterator_flatten)]
 #![allow(unused_imports, unused_variables)]
 
 extern crate proc_macro;
@@ -122,6 +122,12 @@ pub fn thunderclap(args: TokenStream, input: TokenStream) -> TokenStream {
         args.split(',')
             .map(|i| i.trim())
             .map(|i| i.split(':').map(|x| x.trim()).collect::<Vec<&str>>())
+            .map(|i| {
+                i.iter()
+                    .map(|x| x.split('='))
+                    .flatten()
+                    .collect::<Vec<&str>>()
+            })
             .map(|triple| (triple[0], triple[1], triple[2]))
             .map(|(x, y, z)| {
                 (
