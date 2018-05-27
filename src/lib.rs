@@ -257,7 +257,7 @@ pub fn thunderclap(args: TokenStream, input: TokenStream) -> TokenStream {
                 #global_match_state_matcher
                 global_match_states.#name_token = match args.value_of(#name) {
                     Some(v) => Some(Some(v.parse::<#inner>().expect("Failed to parse value. Double check!"))),
-                    None => None,
+                    None => Some(None),
                 };
             }
         } else {
