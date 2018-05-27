@@ -63,7 +63,7 @@ impl Args {
             (acc, zip)
         })
         .1.into_iter()
-        .map(|triple| (triple[0].clone(), triple[1].clone(), triple[2].clone()))
+        .map(|mut triple| (triple.remove(0), triple.remove(0), triple.remove(0)))
         .collect()
     }
 }
