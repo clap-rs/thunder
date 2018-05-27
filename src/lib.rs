@@ -1,7 +1,7 @@
 //! `thunder.rs` a zero-boilerplate commandline argument parser ✨
 #![feature(external_doc)]
 #![doc(include = "../README.md")]
-#![feature(proc_macro, proc_macro_lib)]
+#![feature(proc_macro, proc_macro_lib, iterator_flatten)]
 #![allow(unused_imports, unused_variables)]
 
 extern crate proc_macro;
@@ -314,7 +314,7 @@ pub fn thunderclap(args: TokenStream, input: TokenStream) -> TokenStream {
                 #global_match_state_matcher
                 global_match_states.#name_token = match args.value_of(#name) {
                     Some(v) => Some(Some(v.parse::<#inner>().expect("Failed to parse value. Double check!"))),
-                    None => None,
+                    None => Some(None),
                 };
             }
         } else {
