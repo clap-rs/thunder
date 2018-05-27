@@ -30,7 +30,7 @@ fn main() {
 
 **This prints**
 
-```
+```norun
 USAGE:
     MyApp [SUBCOMMAND]
 
