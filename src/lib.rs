@@ -25,6 +25,49 @@ use syn::{
     ItemStatic, Pat, PathArguments, PathSegment, Stmt, Type,
 };
 
+#[derive(Debug)]
+struct Args {
+    args: Vec<String>,
+    last_field: bool,
+    string: String
+}
+
+impl Args {
+    fn new() -> Args {
+        Args {
+            args: Vec::new(),
+            last_field: false,
+            string: String::new()
+        }
+    }
+
+    fn push(&mut self) {
+        self.string = self.string.trim().to_owned();
+        if self.string.starts_with(',') {
+            self.string.remove(0);
+        }
+
+        self.args.push(self.string.trim().to_owned());
+    }
+
+    fn collect(self) -> Vec<(String, String, String)> {
+        self.args
+        .into_iter()
+        .fold((Vec::new(), Vec::new()), |(mut acc, mut zip), x| {
+            acc.push(x);
+            if acc.len() == 3 {
+                zip.push(acc);
+                acc = Vec::new();
+            }
+
+            (acc, zip)
+        })
+        .1.into_iter()
+        .map(|triple| (triple[0].clone(), triple[1].clone(), triple[2].clone()))
+        .collect()
+    }
+}
+
 macro_rules! check_input {
     ($y:expr, $x:expr) => {
         match $x {
@@ -119,26 +162,46 @@ pub fn thunderclap(args: TokenStream, input: TokenStream) -> TokenStream {
     /* Manually parse any argument pars given to us */
     let args: String = args.to_string();
     let global_args = if args.len() != 0 {
-        args.split(',')
-            .map(|i| i.trim())
-            .map(|i| i.split(':').map(|x| x.trim()).collect::<Vec<&str>>())
-            .map(|triple| (triple[0], triple[1], triple[2]))
-            .map(|(x, y, z)| {
-                (
-                    check_input! { x, TokenStream::from_str(&x.replace("\"", "")) },
-                    check_input! { y, TokenStream::from_str(y) },
-                    z.replace("\"", ""),
-                )
-            })
-            .map(|(x, y, z)| {
-                (
-                    check_input! { x, syn::parse(x.clone()) },
-                    check_input! { y, syn::parse(y.clone()) },
-                    z,
-                )
-            })
-            .map(|(x, y, z)| (x, y, String::from(z)))
-            .collect::<Vec<(Type, Type, String)>>()
+        args
+        .chars()
+        .fold(Args::new(), |mut acc, char| {
+            if char == ':' && !acc.last_field {
+                acc.push();
+                acc.string = String::new();
+                return acc;
+            }
+
+            acc.string.push(char);
+
+            if char == '"' {
+                if acc.last_field {
+                    acc.push();
+                    acc.string = String::new();
+                }
+
+                acc.last_field = !acc.last_field;
+            }
+
+            acc
+        })
+        .collect()
+        .into_iter()
+        .map(|(x, y, z)| {
+            (
+                check_input! { x, TokenStream::from_str(&x.replace("\"", "")) },
+                check_input! { y, TokenStream::from_str(&y) },
+                z.replace("\"", ""),
+            )
+        })
+        .map(|(x, y, z)| {
+            (
+                check_input! { x, syn::parse(x.clone()) },
+                check_input! { y, syn::parse(y.clone()) },
+                z,
+            )
+        })
+        .map(|(x, y, z)| (x, y, String::from(z)))
+        .collect::<Vec<(Type, Type, String)>>()
     } else {
         Vec::new()
     };
