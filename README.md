@@ -1,9 +1,15 @@
-# ⚡ Thunder ⚡
-
 [![](https://img.shields.io/travis/spacekookie/thunder.svg)](https://travis-ci.org/spacekookie/thunder/)
 [![Build status](https://ci.appveyor.com/api/projects/status/clrwni1vork68vq6?svg=true)](https://ci.appveyor.com/project/spacekookie/thunder)
 [![](https://img.shields.io/crates/v/thunder.svg)](https://crates.io/crates/thunder)
 [![Docs.rs](https://docs.rs/thunder/badge.svg)](https://docs.rs/thunder/)
+
+<br/>
+
+<center>
+<img src="logo.svg" />
+</center>
+
+<br/>
 
 Write simple commandline applications in Rust with *zero* boilerplate. Bind Rust functions to CLI functions and options with macros. This crate uses [clap.rs](https://github.com/kbknapp/clap-rs) for the actual argument parsing.
 
