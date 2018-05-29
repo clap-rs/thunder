@@ -4,11 +4,9 @@
 [![Docs.rs](https://docs.rs/thunder/badge.svg)](https://docs.rs/thunder/)
 
 <br/>
-
-<center>
+<p align="center">
 <img src="logo.svg" />
-</center>
-
+</p>
 <br/>
 
 Write simple commandline applications in Rust with *zero* boilerplate. Bind Rust functions to CLI functions and options with macros. This crate uses [clap.rs](https://github.com/kbknapp/clap-rs) for the actual argument parsing.
