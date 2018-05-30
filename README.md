@@ -9,7 +9,7 @@ Write simple commandline applications in Rust with *zero* boilerplate. Bind Rust
 
 ## Example
 
-```rust
+```norun
 // ... ignore the imports for now ...
 
 struct MyApp;
