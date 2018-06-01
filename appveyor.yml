@@ -17,4 +17,4 @@ install:
 
 build_script:
   - cargo build --verbose
-- cargo test --verbose
+  - cargo test --verbose
