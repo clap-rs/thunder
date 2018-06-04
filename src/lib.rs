@@ -289,7 +289,7 @@ pub fn thunderclap(args: TokenStream, input: TokenStream) -> TokenStream {
 
         accessors = quote! {
             #accessors
-            
+
             #[allow(unused)]
             fn #name_token ( /* No Parameters */ ) -> #typed {
                 unsafe {
