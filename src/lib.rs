@@ -91,7 +91,7 @@ macro_rules! check_input {
 ///
 /// ## Example
 ///
-/// ```rust norun
+/// ```norun
 /// fn say_hello(name: &str, age: Option<u16>) {
 ///     // ...
 /// }
@@ -107,14 +107,14 @@ macro_rules! check_input {
 ///
 /// The block below defines a medium sized `thunder` application.
 ///
-/// ```rust norun
+/// ```norun
 /// struct MyApp;
 ///
 /// #[thunderclap]
 /// impl MyApp {
 ///     /// Say hello to someone on the other side
 ///     fn say_hello(name: &str, age: Option<u16>) { /* ... */ }
-///     
+///
 ///     /// It was nice to meet you!
 ///     fn goodybe(name: Option<&str>) { /* ... */ }
 /// }
@@ -137,7 +137,7 @@ macro_rules! check_input {
 ///
 /// A small example below.
 ///
-/// ```rust norun
+/// ```norun
 /// struct MyApp;
 ///
 /// #[thunder(arg1: u32: "A small description", arg2: Option<bool>: "Optional global")]
