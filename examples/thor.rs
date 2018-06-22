@@ -7,7 +7,7 @@ use thunder::thunderclap;
 struct Thor;
 
 /// An application that shoots lightning out of its hands
-#[thunderclap(drunk: bool = "Bla bla bla")]
+#[thunderclap(drunk: bool: "Bla bla bla")]
 impl Thor {
     /// Say hello to someone at home
     fn hello(name: &str, times: Option<u128>) {
