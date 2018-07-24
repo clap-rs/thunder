@@ -1,7 +1,7 @@
 //! `thunder.rs` a zero-boilerplate commandline argument parser ✨
 #![feature(external_doc)]
 #![doc(include = "../README.md")]
-#![feature(proc_macro, proc_macro_lib, iterator_flatten)]
+#![feature(proc_macro_lib, iterator_flatten)]
 #![allow(unused_imports, unused_variables)]
 
 extern crate proc_macro;

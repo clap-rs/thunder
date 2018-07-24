@@ -1,5 +1,5 @@
 //! Thor is the god of thunder
-#![feature(proc_macro)]
+#![feature(use_extern_macros)]
 extern crate clap;
 extern crate thunder;
 use thunder::thunderclap;
@@ -16,20 +16,20 @@ impl Thor {
         });
     }
 
-    // /// Say goodbye. Or don't, if you're shy
-    // fn bye(name: Option<&str>) {
-    //     println!("Not saying bye is rude: {:?}", name);
-    // }
+    /// Say goodbye. Or don't, if you're shy
+    fn bye(name: Option<&str>) {
+        println!("Not saying bye is rude: {:?}", name);
+    }
 
-    // /// Thor will rudely comment on your age
-    // fn aged(age: Option<i128>) {
-    //     println!("Ha, look at you being: {:?}", age);
-    // }
+    /// Thor will rudely comment on your age
+    fn aged(age: Option<i128>) {
+        println!("Ha, look at you being: {:?}", age);
+    }
 
-    // /// Prints 'bar'
-    // fn foo() {
-    //     println!("bar");
-    // }
+    /// Prints 'bar'
+    fn foo() {
+        println!("bar");
+    }
 }
 
 fn main() {
